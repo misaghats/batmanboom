@@ -13,7 +13,7 @@ const PIPE_SPEED = 3;
 
 let bird = {
     x: 50,
-    y: canvas.height / 2,
+    y: canvas.height * 0.25, // Start higher up
     width: BIRD_WIDTH,
     height: BIRD_HEIGHT,
     velocity: 0,
@@ -49,7 +49,7 @@ function birdJump() {
 }
 
 // Ensure pipes are spaced correctly and never overlap
-function createSword() {
+function createPillar() {
     let topHeight;
 
     // Ensure the new pipe does not overlap with the previous one
@@ -62,16 +62,18 @@ function createSword() {
         topHeight = Math.floor(Math.random() * (PIPE_MAX_HEIGHT - PIPE_MIN_HEIGHT) + PIPE_MIN_HEIGHT);
     }
 
-    const topSword = {
-        x: canvas.width,
+    // First pillar is further away
+    const startX = pipes.length === 0 ? canvas.width + 100 : canvas.width;
+    const topPillar = {
+        x: startX,
         y: 0,
         width: PIPE_WIDTH,
         height: topHeight,
         isTop: true,
     };
 
-    const bottomSword = {
-        x: canvas.width,
+    const bottomPillar = {
+        x: startX,
         y: topHeight + PIPE_GAP,
         width: PIPE_WIDTH,
         height: canvas.height - topHeight - PIPE_GAP,
@@ -80,7 +82,7 @@ function createSword() {
 
     // Ensure no two pipes are in the same position
     if (pipes.length === 0 || pipes[pipes.length - 1].top.x + PIPE_WIDTH < canvas.width - PIPE_GAP) {
-        pipes.push({ top: topSword, bottom: bottomSword });
+        pipes.push({ top: topPillar, bottom: bottomPillar });
     }
 }
 
@@ -144,58 +146,37 @@ const batImage = new Image();
 batImage.src = "Batman.png"; // Ensure this image is in the same directory or update the path
 
 // Enhance the sword design with animation and gradient effect
-function drawSwords() {
+function drawPillars() {
     for (let i = 0; i < pipes.length; i++) {
-        // Create gradient for swords
-        const gradientTop = ctx.createLinearGradient(
-            pipes[i].top.x,
-            pipes[i].top.y,
-            pipes[i].top.x + pipes[i].top.width,
-            pipes[i].top.y + pipes[i].top.height
-        );
-        gradientTop.addColorStop(0, "#ff4500"); // Red
-        gradientTop.addColorStop(1, "#ffcc00"); // Yellow
-
-        const gradientBottom = ctx.createLinearGradient(
-            pipes[i].bottom.x,
-            pipes[i].bottom.y,
-            pipes[i].bottom.x + pipes[i].bottom.width,
-            pipes[i].bottom.y + pipes[i].bottom.height
-        );
-        gradientBottom.addColorStop(0, "#ff4500"); // Red
-        gradientBottom.addColorStop(1, "#ffcc00"); // Yellow
-
-        // Draw top sword (triangle with gradient)
-        ctx.fillStyle = gradientTop;
-        ctx.beginPath();
-        ctx.moveTo(pipes[i].top.x, pipes[i].top.y + pipes[i].top.height);
-        ctx.lineTo(pipes[i].top.x + pipes[i].top.width / 2, pipes[i].top.y);
-        ctx.lineTo(pipes[i].top.x + pipes[i].top.width, pipes[i].top.y + pipes[i].top.height);
-        ctx.closePath();
-        ctx.fill();
-
-        // Draw bottom sword (triangle with gradient)
-        ctx.fillStyle = gradientBottom;
-        ctx.beginPath();
-        ctx.moveTo(pipes[i].bottom.x, pipes[i].bottom.y);
-        ctx.lineTo(pipes[i].bottom.x + pipes[i].bottom.width / 2, pipes[i].bottom.y + pipes[i].bottom.height);
-        ctx.lineTo(pipes[i].bottom.x + pipes[i].bottom.width, pipes[i].bottom.y);
-        ctx.closePath();
-        ctx.fill();
-
-        // Add animation effect (glow)
-        ctx.shadowColor = "#ffcc00";
-        ctx.shadowBlur = 15;
-
-        // Draw bat image on top of each sword
-        const batSize = 30; // Size of the bat image
-        ctx.drawImage(batImage, pipes[i].top.x + pipes[i].top.width / 2 - batSize / 2, pipes[i].top.height - batSize, batSize, batSize);
-        ctx.drawImage(batImage, pipes[i].bottom.x + pipes[i].bottom.width / 2 - batSize / 2, pipes[i].bottom.y, batSize, batSize);
+        ctx.save();
+        ctx.fillStyle = '#ffcc00';
+        ctx.strokeStyle = '#232526';
+        // Draw top pillar as a series of upward spikes
+        let spikeCount = Math.floor(pipes[i].top.width / 10);
+        let spikeWidth = pipes[i].top.width / spikeCount;
+        for (let s = 0; s < spikeCount; s++) {
+            ctx.beginPath();
+            ctx.moveTo(pipes[i].top.x + s * spikeWidth, pipes[i].top.y); // base left (top)
+            ctx.lineTo(pipes[i].top.x + (s + 0.5) * spikeWidth, pipes[i].top.y + pipes[i].top.height); // tip (bottom)
+            ctx.lineTo(pipes[i].top.x + (s + 1) * spikeWidth, pipes[i].top.y); // base right (top)
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+        }
+        // Draw bottom pillar as a series of downward spikes
+        spikeCount = Math.floor(pipes[i].bottom.width / 10);
+        spikeWidth = pipes[i].bottom.width / spikeCount;
+        for (let s = 0; s < spikeCount; s++) {
+            ctx.beginPath();
+            ctx.moveTo(pipes[i].bottom.x + s * spikeWidth, pipes[i].bottom.y + pipes[i].bottom.height); // base left (bottom)
+            ctx.lineTo(pipes[i].bottom.x + (s + 0.5) * spikeWidth, pipes[i].bottom.y); // tip (top)
+            ctx.lineTo(pipes[i].bottom.x + (s + 1) * spikeWidth, pipes[i].bottom.y + pipes[i].bottom.height); // base right (bottom)
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+        }
+        ctx.restore();
     }
-
-    // Reset shadow settings after drawing
-    ctx.shadowColor = "transparent";
-    ctx.shadowBlur = 0;
 }
 
 // Add fire animation when the bird hits the swords
@@ -372,7 +353,7 @@ function showWinMessage() {
 function drawGame() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBird();
-    drawSwords();
+    drawPillars();
     drawScore();
 
     if (isGameOver) {
@@ -393,7 +374,7 @@ function drawGame() {
 function startGame() {
     if (!gameStarted) {
         gameStarted = true;
-        setInterval(createSword, 2000); // Use createSword instead of createPipe
+        setInterval(createPillar, 2000);
         drawGame();
     }
 }
@@ -418,16 +399,16 @@ window.addEventListener("keydown", (e) => {
 
 // ریست کردن بازی
 restartButton.addEventListener("click", () => {
-    bird.y = canvas.height / 2;
+    bird.y = canvas.height * 0.25;
     bird.velocity = 0;
-    pipes = []; // Clear all existing pipes
+    pipes = [];
     score = 0;
-    pipeSpeed = 2; // Reset pipe speed
+    pipeSpeed = 2;
     isGameOver = false;
     gameOverScreen.style.display = "none";
     gameStarted = false;
     startCountdown(() => {
-        createSword(); // Create the first pipe to ensure proper spacing
+        createPillar();
         startGame();
-    }, 3); // Set countdown to 3 seconds
+    }, 3);
 });
