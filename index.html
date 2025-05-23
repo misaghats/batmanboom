@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batman</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Beautify the selection screen and rename it to Batman -->
+    <div id="homeScreen" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background-color: #1a1a1a; color: white; font-family: 'Arial', sans-serif;">
+        <h1 style="font-size: 60px; margin-bottom: 20px; color: #ffcc00;">Batman</h1>
+        <button id="levelOneButton" style="margin: 10px; padding: 15px 30px; font-size: 24px; background-color: #333; color: white; border: none; border-radius: 5px; cursor: pointer;">Level One</button>
+        <button id="levelTwoButton" style="margin: 10px; padding: 15px 30px; font-size: 24px; background-color: #333; color: white; border: none; border-radius: 5px; cursor: not-allowed;" disabled>Level Two 🔒</button>
+    </div>
+    <div id="gameContainer" style="display: none;">
+        <canvas id="gameCanvas" width="400" height="600"></canvas>
+        <div id="gameOverScreen">
+            <h1>Game Over</h1>
+            <p>Your Score: <span id="finalScore">0</span></p>
+            <button id="restartButton">Restart</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
