@@ -31,7 +31,7 @@ const restartButton = document.getElementById("restartButton");
 
 // Replace the bird with a Batman character image
 const batmanImage = new Image();
-batmanImage.src = "batman.png"; // Ensure this image is in the same directory or update the path
+batmanImage.src = "Batman.png"; // Ensure this image is in the same directory or update the path
 
 function drawBird() {
     ctx.drawImage(batmanImage, bird.x, bird.y, bird.width, bird.height);
