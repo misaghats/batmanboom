@@ -1,19 +1,46 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
+/**
+ * Responsive canvas for mobile and desktop
+ */
+function resizeCanvas() {
+    // Set a max size and keep aspect ratio for mobile/desktop
+    const width = Math.min(window.innerWidth * 0.98, 480);
+    const height = Math.min(window.innerHeight * 0.75, 700);
+    canvas.width = width;
+    canvas.height = height;
+
+    // Update pipe/bird settings based on new canvas size
+    PIPE_GAP = canvas.height * 0.25;
+    PIPE_MIN_HEIGHT = canvas.height * 0.2;
+    PIPE_MAX_HEIGHT = canvas.height * 0.6;
+
+    // Reset bird position if game not started
+    if (!gameStarted) {
+        bird.y = canvas.height * 0.25;
+    }
+}
+window.addEventListener('resize', () => {
+    resizeCanvas();
+});
+resizeCanvas();
+
+// Game constants (some will be reset after resize!)
 const GRAVITY = 0.25;
 const BIRD_JUMP = -4.5;
 const PIPE_WIDTH = 60;
-const PIPE_GAP = canvas.height * 0.25; // Fixed gap between pipes (25% of canvas height)
-const PIPE_MIN_HEIGHT = canvas.height * 0.2; // Minimum pipe height (20% of canvas height)
-const PIPE_MAX_HEIGHT = canvas.height * 0.6; // Maximum pipe height (60% of canvas height)
+// The following will be updated in resizeCanvas()
+let PIPE_GAP = canvas.height * 0.25;
+let PIPE_MIN_HEIGHT = canvas.height * 0.2;
+let PIPE_MAX_HEIGHT = canvas.height * 0.6;
 const BIRD_WIDTH = 40;
 const BIRD_HEIGHT = 40;
 const PIPE_SPEED = 3;
 
 let bird = {
     x: 50,
-    y: canvas.height * 0.25, // Start higher up
+    y: canvas.height * 0.25,
     width: BIRD_WIDTH,
     height: BIRD_HEIGHT,
     velocity: 0,
@@ -88,7 +115,6 @@ function createPillar() {
 
 let pipeSpeed = 1.5; // Slower initial pipe speed
 
-// Display a small message only at score 5
 function movePipes() {
     pipes.forEach((pipe, i) => {
         pipe.top.x -= pipeSpeed;
@@ -98,7 +124,7 @@ function movePipes() {
             score++;
 
             if (score === 5) {
-                showMessage("Damn, you are good!"); // Show message only at score 5
+                showMessage("Damn, you are good!");
             }
 
             if (score === 10) {
@@ -145,7 +171,6 @@ function showFixedMessage(message) {
 const batImage = new Image();
 batImage.src = "Batman.png"; // Ensure this image is in the same directory or update the path
 
-// Enhance the sword design with animation and gradient effect
 function drawPillars() {
     for (let i = 0; i < pipes.length; i++) {
         ctx.save();
@@ -156,9 +181,9 @@ function drawPillars() {
         let spikeWidth = pipes[i].top.width / spikeCount;
         for (let s = 0; s < spikeCount; s++) {
             ctx.beginPath();
-            ctx.moveTo(pipes[i].top.x + s * spikeWidth, pipes[i].top.y); // base left (top)
-            ctx.lineTo(pipes[i].top.x + (s + 0.5) * spikeWidth, pipes[i].top.y + pipes[i].top.height); // tip (bottom)
-            ctx.lineTo(pipes[i].top.x + (s + 1) * spikeWidth, pipes[i].top.y); // base right (top)
+            ctx.moveTo(pipes[i].top.x + s * spikeWidth, pipes[i].top.y);
+            ctx.lineTo(pipes[i].top.x + (s + 0.5) * spikeWidth, pipes[i].top.y + pipes[i].top.height);
+            ctx.lineTo(pipes[i].top.x + (s + 1) * spikeWidth, pipes[i].top.y);
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
@@ -168,9 +193,9 @@ function drawPillars() {
         spikeWidth = pipes[i].bottom.width / spikeCount;
         for (let s = 0; s < spikeCount; s++) {
             ctx.beginPath();
-            ctx.moveTo(pipes[i].bottom.x + s * spikeWidth, pipes[i].bottom.y + pipes[i].bottom.height); // base left (bottom)
-            ctx.lineTo(pipes[i].bottom.x + (s + 0.5) * spikeWidth, pipes[i].bottom.y); // tip (top)
-            ctx.lineTo(pipes[i].bottom.x + (s + 1) * spikeWidth, pipes[i].bottom.y + pipes[i].bottom.height); // base right (bottom)
+            ctx.moveTo(pipes[i].bottom.x + s * spikeWidth, pipes[i].bottom.y + pipes[i].bottom.height);
+            ctx.lineTo(pipes[i].bottom.x + (s + 0.5) * spikeWidth, pipes[i].bottom.y);
+            ctx.lineTo(pipes[i].bottom.x + (s + 1) * spikeWidth, pipes[i].bottom.y + pipes[i].bottom.height);
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
@@ -179,20 +204,18 @@ function drawPillars() {
     }
 }
 
-// Add fire animation when the bird hits the swords
 function triggerFireEffect() {
     const fireInterval = setInterval(() => {
-        ctx.fillStyle = "#ff4500"; // Fire color
+        ctx.fillStyle = "#ff4500";
         ctx.font = "50px Arial";
-        ctx.fillText("🔥", bird.x, bird.y); // Fire emoji at bird's position
+        ctx.fillText("🔥", bird.x, bird.y);
     }, 100);
 
     setTimeout(() => {
-        clearInterval(fireInterval); // Stop the fire animation after 1 second
+        clearInterval(fireInterval);
     }, 1000);
 }
 
-// Show an animation screen after losing
 function showLossAnimation() {
     const animationScreen = document.createElement("div");
     animationScreen.style.position = "fixed";
@@ -217,10 +240,9 @@ function showLossAnimation() {
 
     setTimeout(() => {
         document.body.removeChild(animationScreen);
-    }, 2000); // Remove the animation screen after 2 seconds
+    }, 2000);
 }
 
-// Fix potential issue with message display causing the game to hang
 function showMessage(message) {
     const messageElement = document.createElement("div");
     messageElement.textContent = message;
@@ -234,14 +256,14 @@ function showMessage(message) {
     messageElement.style.padding = "10px 20px";
     messageElement.style.borderRadius = "5px";
     messageElement.style.boxShadow = "0 0 10px #ffcc00";
-    messageElement.style.zIndex = "1000"; // Ensure it appears above other elements
+    messageElement.style.zIndex = "1000";
     document.body.appendChild(messageElement);
 
     setTimeout(() => {
         if (document.body.contains(messageElement)) {
             document.body.removeChild(messageElement);
         }
-    }, 2000); // Remove the message after 2 seconds
+    }, 2000);
 }
 
 function checkCollisions() {
@@ -275,7 +297,6 @@ function checkCollisions() {
     }
 }
 
-// نمایش امتیاز
 function drawScore() {
     ctx.fillStyle = "#fff";
     ctx.font = "30px Arial";
@@ -283,9 +304,8 @@ function drawScore() {
 }
 
 // Prevent the game from starting before the countdown ends
-let countdownActive = true; // Flag to track if countdown is active
+let countdownActive = true;
 
-// Add a countdown timer before starting the game
 function startCountdown(callback, seconds = 5) {
     let countdown = seconds;
     const countdownElement = document.createElement("div");
@@ -308,13 +328,12 @@ function startCountdown(callback, seconds = 5) {
         if (countdown < 0) {
             clearInterval(interval);
             document.body.removeChild(countdownElement);
-            countdownActive = false; // Countdown is finished
-            callback(); // Start the game after countdown
+            countdownActive = false;
+            callback();
         }
     }, 1000);
 }
 
-// Check for win condition at 30 points
 function checkWinCondition() {
     if (score >= 30) {
         isGameOver = true;
@@ -347,7 +366,7 @@ function showWinMessage() {
 
     setTimeout(() => {
         document.body.removeChild(winScreen);
-    }, 5000); // Remove the win screen after 5 seconds
+    }, 5000);
 }
 
 function drawGame() {
@@ -365,12 +384,11 @@ function drawGame() {
         moveBird();
         movePipes();
         checkCollisions();
-        checkWinCondition(); // Check if the player has won
+        checkWinCondition();
         requestAnimationFrame(drawGame);
     }
 }
 
-// شروع بازی
 function startGame() {
     if (!gameStarted) {
         gameStarted = true;
@@ -385,14 +403,26 @@ const levelOneButton = document.getElementById("levelOneButton");
 const levelTwoButton = document.getElementById("levelTwoButton");
 
 levelOneButton.addEventListener("click", () => {
-    homeScreen.style.display = "none"; // Hide the home screen
-    document.getElementById("gameContainer").style.display = "block"; // Show the game container
-    startCountdown(startGame); // Start countdown before starting the game
+    homeScreen.style.display = "none";
+    document.getElementById("gameContainer").style.display = "block";
+    resizeCanvas(); // Ensure correct canvas size at game start
+    startCountdown(startGame);
 });
 
 // مدیریت ورودی‌ها
 window.addEventListener("keydown", (e) => {
     if (!countdownActive && (e.key === " " || e.key === "ArrowUp")) {
+        birdJump();
+    }
+});
+// کنترل موبایل: لمس یا کلیک صفحه پرنده را بپراند
+window.addEventListener("touchstart", (e) => {
+    if (!countdownActive) {
+        birdJump();
+    }
+});
+window.addEventListener("mousedown", (e) => {
+    if (!countdownActive) {
         birdJump();
     }
 });
@@ -407,6 +437,7 @@ restartButton.addEventListener("click", () => {
     isGameOver = false;
     gameOverScreen.style.display = "none";
     gameStarted = false;
+    resizeCanvas();
     startCountdown(() => {
         createPillar();
         startGame();
