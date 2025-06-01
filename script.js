@@ -412,3 +412,8 @@ restartButton.addEventListener("click", () => {
         startGame();
     }, 3);
 });
+canvas.addEventListener("touchstart", function (e) {
+    if (!countdownActive) {
+        birdJump();
+    }
+});
